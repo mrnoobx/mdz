@@ -1,33 +1,20 @@
-name: Node.js CI
+# Use the official Node.js 20 LTS image
+FROM node:20
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# Set working directory
+WORKDIR /app
 
-jobs:
-  build:
+# Copy package.json and package-lock.json first for caching
+COPY package*.json ./
 
-    runs-on: ubuntu-latest
+# Install dependencies
+RUN npm install
 
-    strategy:
-      matrix:
-        node-version: [20.x]
+# Copy the rest of the project files
+COPY . .
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+# Expose the port (change if your app uses a different one)
+EXPOSE 3000
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Start application
-      run: npm start
+# Start the application
+CMD ["npm", "start"]
