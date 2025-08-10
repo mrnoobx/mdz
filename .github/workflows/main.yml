@@ -1,20 +1,30 @@
-# Use the official Node.js 20 LTS image
-FROM node:20
+name: 🚀 Build and Push Docker Image to Docker Hub
 
-# Set working directory
-WORKDIR /app
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-# Copy package.json and package-lock.json first for caching
-COPY package*.json ./
+jobs:
+  docker:
+    runs-on: ubuntu-latest
 
-# Install dependencies
-RUN npm install
+    steps:
+    - name: 📦 Checkout Repository
+      uses: actions/checkout@v3
 
-# Copy the rest of the project files
-COPY . .
+    - name: 🛠️ Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-# Expose the port (change if your app uses a different one)
-EXPOSE 3000
+    - name: 🔐 Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-# Start the application
-CMD ["npm", "start"]
+    - name: 🐳 Build and Push Docker Image
+      run: |
+        IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/${{ secrets.MYIMAGE }}
+        docker build -t $IMAGE_NAME:latest .
+        docker push $IMAGE_NAME:latest
